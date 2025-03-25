@@ -6,6 +6,8 @@ interface CollectionsContextType {
   index: number;
   itemVariable: string;
   fields: string[];
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 // Tạo context với giá trị mặc định
@@ -20,6 +22,8 @@ export const CollectionsContext = createContext<CollectionsContextType>({
     'discountedPrice',
     'voucherCode',
   ],
+  isLoading: false,
+  error: null,
 });
 
 // Hook để sử dụng dữ liệu từ context

@@ -1,5 +1,5 @@
 import { Element, useNode } from '@craftjs/core';
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import { CollectionsProvider } from './CollectionsContext';
 import { CollectionsSettings } from './CollectionsSettings';
@@ -26,6 +26,11 @@ export type CollectionsProps = {
   gridGap: string;
   itemsPerRow: number;
   fields: string[];
+  // Thuộc tính mới cho API
+  apiUrl: string;
+  apiEnabled: boolean;
+  apiDataPath: string;
+  apiRefreshInterval: number;
 };
 
 const defaultProps = {
@@ -46,6 +51,11 @@ const defaultProps = {
   gridGap: '16px',
   itemsPerRow: 3,
   fields: [],
+  // Giá trị mặc định cho API mới
+  apiUrl: '',
+  apiEnabled: false,
+  apiDataPath: 'data',
+  apiRefreshInterval: 0,
 };
 
 export const Collections = (props: Partial<CollectionsProps>) => {
@@ -70,10 +80,76 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     gridGap,
     itemsPerRow,
     fields,
+    apiUrl,
+    apiEnabled,
+    apiDataPath,
+    apiRefreshInterval,
   } = props;
 
+  // State cho dữ liệu API
+  const [apiData, setApiData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
   // Using useNode to connect to the Craft.js system
-  const { id } = useNode();
+  const { id, actions: { setProp } } = useNode((node) => ({
+    id: node.id,
+  }));
+
+  // Hàm fetch dữ liệu từ API
+  const fetchData = useCallback(async () => {
+    if (!apiEnabled || !apiUrl) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(apiUrl);
+      
+      if (!response.ok) {
+        throw new Error(`API trả về lỗi: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // Lấy dữ liệu theo đường dẫn
+      let fetchedData = result;
+      if (apiDataPath) {
+        const paths = apiDataPath.split('.');
+        for (const path of paths) {
+          fetchedData = fetchedData?.[path];
+          if (!fetchedData) break;
+        }
+      }
+      
+      if (Array.isArray(fetchedData)) {
+        setApiData(fetchedData);
+        // Cập nhật trường dữ liệu nếu có
+        if (fetchedData.length > 0) {
+          const newFields = Object.keys(fetchedData[0]);
+          setProp((p) => (p.fields = newFields));
+        }
+      } else {
+        throw new Error('Dữ liệu không phải dạng mảng');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Lỗi khi tải dữ liệu từ API');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [apiUrl, apiEnabled, apiDataPath, setProp]);
+  
+  // Thiết lập fetch API và interval refresh
+  useEffect(() => {
+    if (apiEnabled) {
+      fetchData();
+      
+      if (apiRefreshInterval && apiRefreshInterval > 0) {
+        const interval = setInterval(fetchData, apiRefreshInterval);
+        return () => clearInterval(interval);
+      }
+    }
+  }, [fetchData, apiEnabled, apiRefreshInterval]);
 
   // Render columns (legacy mode)
   const renderColumns = () => {
@@ -102,7 +178,29 @@ export const Collections = (props: Partial<CollectionsProps>) => {
 
   // Render data items
   const renderDataItems = () => {
-    if (!data || !Array.isArray(data) || data.length === 0) {
+    // Dùng dữ liệu từ API nếu có, ngược lại dùng dữ liệu từ props
+    const displayData = apiEnabled && apiData.length > 0 ? apiData : data;
+    
+    if (!displayData || !Array.isArray(displayData) || displayData.length === 0) {
+      // Hiển thị trạng thái loading nếu đang tải
+      if (apiEnabled && isLoading) {
+        return (
+          <div className="w-full p-4 text-center text-gray-500">
+            <div className="animate-pulse">Đang tải dữ liệu...</div>
+          </div>
+        );
+      }
+      
+      // Hiển thị lỗi nếu có
+      if (apiEnabled && error) {
+        return (
+          <div className="w-full p-4 text-center text-red-500">
+            <div className="mb-2">❌ Lỗi khi tải dữ liệu</div>
+            <div className="text-xs">{error}</div>
+          </div>
+        );
+      }
+      
       // Fallback: Hiển thị một mục mẫu nếu không có dữ liệu
       return (
         <CollectionsProvider
@@ -111,6 +209,8 @@ export const Collections = (props: Partial<CollectionsProps>) => {
             index: 0,
             itemVariable,
             fields: fields || [],
+            isLoading,
+            error,
           }}
         >
           <Element
@@ -131,7 +231,7 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     }
 
     // Hiển thị danh sách dữ liệu thực tế
-    return data.map((item, index) => (
+    return displayData.map((item, index) => (
       <CollectionsProvider
         key={`${id}-item-${index}`}
         value={{
@@ -139,6 +239,8 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           index,
           itemVariable,
           fields: fields || Object.keys(item) || [],
+          isLoading,
+          error,
         }}
       >
         <Element
@@ -152,7 +254,7 @@ export const Collections = (props: Partial<CollectionsProps>) => {
             border: '1px dashed #ddd',
           }}
         >
-          {children}
+          {index === 0 && children}
         </Element>
       </CollectionsProvider>
     ));

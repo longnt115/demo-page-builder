@@ -1,5 +1,5 @@
 import { useNode } from '@craftjs/core';
-import { FormControlLabel, Radio } from '@mui/material';
+import { FormControlLabel, Radio, Switch } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { ToolbarItem, ToolbarSection } from '../../editor';
@@ -12,8 +12,26 @@ export const CollectionsSettings = () => {
     props: node.data.props,
   }));
 
+  // Log props để kiểm tra
+  useEffect(() => {
+    console.log("Current props:", props);
+  }, [props]);
+
   const [dataInput, setDataInput] = useState('');
   const [dataFields, setDataFields] = useState<string[]>([]);
+  const [apiTestStatus, setApiTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [apiTestError, setApiTestError] = useState<string | null>(null);
+  const [apiTestResult, setApiTestResult] = useState<any | null>(null);
+  const [apiUrl, setApiUrl] = useState('');
+
+  // Đồng bộ giá trị apiUrl từ props
+  useEffect(() => {
+    if (props.apiUrl) {
+      setApiUrl(props.apiUrl);
+    }
+  }, [props.apiUrl]);
+
+  const [apiRefreshInterval, setApiRefreshInterval] = useState(0);
 
   // Cập nhật danh sách trường dữ liệu khi dữ liệu thay đổi
   useEffect(() => {
@@ -64,6 +82,80 @@ export const CollectionsSettings = () => {
       }
     } catch (e) {
       alert('Lỗi: JSON không hợp lệ');
+    }
+  };
+
+  // Kiểm tra API
+  const handleTestApi = async () => {
+    // Sử dụng biến local apiUrl hoặc ưu tiên giá trị từ input
+    const currentApiUrl = apiUrl || props.apiUrl || '';
+    console.log("Đang kiểm tra API:", currentApiUrl);
+    
+    if (!currentApiUrl) {
+      setApiTestError('Vui lòng nhập URL API');
+      setApiTestStatus('error');
+      return;
+    }
+
+    setApiTestStatus('loading');
+    setApiTestError(null);
+    setApiTestResult(null);
+
+    try {
+      // Sử dụng proxy hoặc CORS nếu cần thiết
+      const response = await fetch(currentApiUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API trả về lỗi: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Kết quả API:", result);
+      
+      // Lấy dữ liệu theo đường dẫn
+      let fetchedData = result;
+      if (props.apiDataPath) {
+        const paths = props.apiDataPath.split('.');
+        for (const path of paths) {
+          if (fetchedData && path in fetchedData) {
+            fetchedData = fetchedData[path];
+          } else {
+            throw new Error(`Không tìm thấy đường dẫn '${props.apiDataPath}' trong dữ liệu API`);
+          }
+        }
+      }
+      
+      if (!Array.isArray(fetchedData)) {
+        throw new Error('Dữ liệu không phải dạng mảng');
+      }
+
+      console.log("Dữ liệu đã xử lý:", fetchedData);
+      setApiTestResult(fetchedData);
+      setApiTestStatus('success');
+
+      // Tự động cập nhật fields nếu có dữ liệu
+      if (fetchedData.length > 0) {
+        const extractedFields = Object.keys(fetchedData[0]);
+        setDataFields(extractedFields);
+        setProp((props) => (props.fields = extractedFields));
+      }
+    } catch (err: any) {
+      console.error("Lỗi API:", err);
+      setApiTestError(err.message || 'Lỗi khi tải dữ liệu từ API');
+      setApiTestStatus('error');
+    }
+  };
+
+  // Áp dụng kết quả API test vào dữ liệu
+  const handleApplyApiTestResult = () => {
+    if (apiTestResult && Array.isArray(apiTestResult)) {
+      setProp((props) => (props.data = apiTestResult));
+      setProp((props) => (props.apiEnabled = true));
     }
   };
 
@@ -124,6 +216,93 @@ export const CollectionsSettings = () => {
               type="text"
               label="Tên biến item"
             />
+
+            {/* Thêm phần cấu hình API */}
+            <div className="block w-full mt-3 mb-4 p-3 border border-gray-300 rounded-md bg-gray-50">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-medium">Dữ liệu từ API</p>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={props.apiEnabled || false}
+                      onChange={(_, checked) => {
+                        setProp((props) => (props.apiEnabled = checked));
+                      }}
+                      size="small"
+                    />
+                  }
+                  label="Bật"
+                />
+              </div>
+
+              {/* Thay ToolbarItem bằng input thông thường để debug */}
+              <div className="mb-3">
+                <label className="block text-sm font-medium mb-1">URL API</label>
+                <input 
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  value={apiUrl}
+                  onChange={(e) => {
+                    setApiUrl(e.target.value);
+                    setProp((props) => (props.apiUrl = e.target.value));
+                  }}
+                  placeholder="https://example.com/api/data"
+                />
+              </div>
+              
+              <ToolbarItem 
+                propKey="apiDataPath" 
+                type="text" 
+                label="Đường dẫn dữ liệu" 
+              />
+              
+              <div className="flex gap-2 items-center">
+                <div className="flex-1">
+                  <ToolbarItem 
+                    propKey="apiRefreshInterval" 
+                    type="number" 
+                    label="Làm mới (ms)" 
+                  />
+                </div>
+                <div className="mt-5">
+                  <button 
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={() => handleTestApi()}
+                    disabled={apiTestStatus === 'loading'}
+                  >
+                    {apiTestStatus === 'loading' ? 'Đang kiểm tra...' : 'Kiểm tra API'}
+                  </button>
+                </div>
+              </div>
+
+              {apiTestStatus === 'error' && (
+                <div className="mt-2 p-2 text-red-500 bg-red-50 rounded text-xs">
+                  <div className="font-semibold">Lỗi:</div>
+                  <div>{apiTestError}</div>
+                </div>
+              )}
+
+              {apiTestStatus === 'success' && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-green-600 font-medium">✓ API hoạt động</p>
+                    <button 
+                      className="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
+                      onClick={handleApplyApiTestResult}
+                    >
+                      Áp dụng dữ liệu
+                    </button>
+                  </div>
+                  {apiTestResult && apiTestResult.length > 0 && (
+                    <div className="mt-1 bg-white p-2 rounded border text-xs max-h-20 overflow-auto">
+                      <pre className="whitespace-pre-wrap break-all">
+                        {JSON.stringify(apiTestResult[0], null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="block w-full mt-2 p-3 border border-gray-300 rounded-md">
               <p className="text-sm font-medium mb-2">
