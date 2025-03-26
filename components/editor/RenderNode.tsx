@@ -89,15 +89,16 @@ export const RenderNode = ({ render }) => {
   }, [dom, getPos]);
 
   React.useEffect(() => {
-    document
-      .querySelector('.craftjs-renderer')
-      .addEventListener('scroll', scroll);
-
-    return () => {
-      document
-        .querySelector('.craftjs-renderer')
-        .removeEventListener('scroll', scroll);
-    };
+    const craftNode = document.querySelector('.craftjs-renderer');
+    if (craftNode) {
+      craftNode.addEventListener('scroll', scroll);
+      
+      return () => {
+        craftNode.removeEventListener('scroll', scroll);
+      };
+    }
+    
+    return () => {};
   }, [scroll]);
 
   return (

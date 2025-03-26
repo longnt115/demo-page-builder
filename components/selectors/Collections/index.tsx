@@ -26,11 +26,16 @@ export type CollectionsProps = {
   gridGap: string;
   itemsPerRow: number;
   fields: string[];
-  // Thuộc tính mới cho API
+  // Thuộc tính cho nguồn dữ liệu
+  dataSource: 'static' | 'api' | 'json';
+  // Thuộc tính cho API
   apiUrl: string;
   apiEnabled: boolean;
   apiDataPath: string;
   apiRefreshInterval: number;
+  // Thuộc tính cho JSON
+  jsonData: string;
+  jsonDataPath: string;
 };
 
 const defaultProps = {
@@ -51,11 +56,16 @@ const defaultProps = {
   gridGap: '16px',
   itemsPerRow: 3,
   fields: [],
-  // Giá trị mặc định cho API mới
+  // Nguồn dữ liệu mặc định
+  dataSource: 'static' as const,
+  // Giá trị mặc định cho API
   apiUrl: '',
   apiEnabled: false,
   apiDataPath: 'data',
   apiRefreshInterval: 0,
+  // Giá trị mặc định cho JSON
+  jsonData: '',
+  jsonDataPath: 'data',
 };
 
 export const Collections = (props: Partial<CollectionsProps>) => {
@@ -80,16 +90,23 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     gridGap,
     itemsPerRow,
     fields,
+    dataSource,
     apiUrl,
     apiEnabled,
     apiDataPath,
     apiRefreshInterval,
+    jsonData,
+    jsonDataPath,
   } = props;
 
   // State cho dữ liệu API
   const [apiData, setApiData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State cho dữ liệu JSON
+  const [jsonDataLoaded, setJsonDataLoaded] = useState<any[]>([]);
+  const [jsonDataError, setJsonDataError] = useState<string | null>(null);
 
   // Using useNode to connect to the Craft.js system
   const { id, actions: { setProp } } = useNode((node) => ({
@@ -139,6 +156,38 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     }
   }, [apiUrl, apiEnabled, apiDataPath, setProp]);
   
+  // Hàm tải dữ liệu từ JSON
+  const loadJsonData = useCallback(() => {
+    if (!jsonData) return;
+    
+    try {
+      const jsonDataParsed = JSON.parse(jsonData);
+      
+      // Lấy dữ liệu theo đường dẫn
+      let jsonDataLoaded = jsonDataParsed;
+      if (jsonDataPath) {
+        const paths = jsonDataPath.split('.');
+        for (const path of paths) {
+          jsonDataLoaded = jsonDataLoaded?.[path];
+          if (!jsonDataLoaded) break;
+        }
+      }
+      
+      if (Array.isArray(jsonDataLoaded)) {
+        setJsonDataLoaded(jsonDataLoaded);
+        // Cập nhật trường dữ liệu nếu có
+        if (jsonDataLoaded.length > 0) {
+          const newFields = Object.keys(jsonDataLoaded[0]);
+          setProp((p) => (p.fields = newFields));
+        }
+      } else {
+        throw new Error('Dữ liệu không phải dạng mảng');
+      }
+    } catch (err: any) {
+      setJsonDataError(err.message || 'Lỗi khi tải dữ liệu từ JSON');
+    }
+  }, [jsonData, jsonDataPath, setProp]);
+  
   // Thiết lập fetch API và interval refresh
   useEffect(() => {
     if (apiEnabled) {
@@ -148,8 +197,10 @@ export const Collections = (props: Partial<CollectionsProps>) => {
         const interval = setInterval(fetchData, apiRefreshInterval);
         return () => clearInterval(interval);
       }
+    } else if (dataSource === 'json') {
+      loadJsonData();
     }
-  }, [fetchData, apiEnabled, apiRefreshInterval]);
+  }, [fetchData, apiEnabled, apiRefreshInterval, loadJsonData, dataSource]);
 
   // Render columns (legacy mode)
   const renderColumns = () => {
@@ -178,8 +229,18 @@ export const Collections = (props: Partial<CollectionsProps>) => {
 
   // Render data items
   const renderDataItems = () => {
-    // Dùng dữ liệu từ API nếu có, ngược lại dùng dữ liệu từ props
-    const displayData = apiEnabled && apiData.length > 0 ? apiData : data;
+    // Dùng dữ liệu từ nguồn dữ liệu được chọn
+    let displayData;
+    switch (dataSource) {
+      case 'api':
+        displayData = apiData;
+        break;
+      case 'json':
+        displayData = jsonDataLoaded;
+        break;
+      default:
+        displayData = data;
+    }
     
     if (!displayData || !Array.isArray(displayData) || displayData.length === 0) {
       // Hiển thị trạng thái loading nếu đang tải
@@ -197,6 +258,15 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           <div className="w-full p-4 text-center text-red-500">
             <div className="mb-2">❌ Lỗi khi tải dữ liệu</div>
             <div className="text-xs">{error}</div>
+          </div>
+        );
+      }
+      
+      if (dataSource === 'json' && jsonDataError) {
+        return (
+          <div className="w-full p-4 text-center text-red-500">
+            <div className="mb-2">❌ Lỗi khi tải dữ liệu từ JSON</div>
+            <div className="text-xs">{jsonDataError}</div>
           </div>
         );
       }

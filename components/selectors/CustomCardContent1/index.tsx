@@ -1,10 +1,10 @@
-import { useEditor, useNode } from '@craftjs/core';
-import { useEffect } from 'react';
-import { styled } from 'styled-components';
+import { useEditor, useNode } from "@craftjs/core";
+import { useEffect } from "react";
+import { styled } from "styled-components";
 
-import { CustomCardContent1Settings } from './CustomCardContent1Settings';
+import { CustomCardContent1Settings } from "./CustomCardContent1Settings";
 
-import { useCollectionsContext } from '../Collections/CollectionsContext';
+import { useCollectionsContext } from "../Collections/CollectionsContext";
 
 // Styled components for the card
 const Card = styled.div`
@@ -87,23 +87,9 @@ const DiscountedPrice = styled.span`
   font-weight: 600;
 `;
 
-const CartButton = styled.button`
-  width: 40px;
-  height: 40px;
-  background-color: #6952cc;
-  border: none;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: white;
-  font-size: 18px;
-`;
-
 // Formatting for price in Vietnamese đồng
 const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ';
+  return new Intl.NumberFormat("vi-VN").format(price) + "đ";
 };
 
 // Define the props type
@@ -120,9 +106,9 @@ interface CustomCardContent1Props {
 
 // Default props
 const defaultProps: CustomCardContent1Props = {
-  imageUrl: 'https://via.placeholder.com/300x200',
-  title: 'Viên uống bổ sung canxi Nature Gift Green Living Canxi (60 Viên)',
-  voucherCode: 'TUOIMAT37',
+  imageUrl: "https://via.placeholder.com/300x200",
+  title: "Viên uống bổ sung canxi Nature Gift Green Living Canxi (60 Viên)",
+  voucherCode: "TUOIMAT37",
   originalPrice: 365000,
   discountedPrice: 239000,
   showVoucher: true,
@@ -219,7 +205,6 @@ export const CustomCardContent1 = (props: Partial<CustomCardContent1Props>) => {
               {formatPrice(resolvedDiscountedPrice)}
             </DiscountedPrice>
           </Price>
-          <CartButton>🛒</CartButton>
         </PriceContainer>
       </CardContent>
     </Card>
@@ -228,7 +213,7 @@ export const CustomCardContent1 = (props: Partial<CustomCardContent1Props>) => {
 
 // Add craft.js configuration
 CustomCardContent1.craft = {
-  displayName: 'Product Card',
+  displayName: "Product Card",
   props: defaultProps,
   rules: {
     canDrag: () => true,
