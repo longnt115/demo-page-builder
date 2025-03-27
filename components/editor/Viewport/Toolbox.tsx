@@ -5,6 +5,7 @@ import { styled } from 'styled-components';
 import ButtonSvg from '../../../public/icons/toolbox/button.svg';
 import CardSvg from '../../../public/icons/toolbox/card.svg';
 import CollectionsSvg from '../../../public/icons/toolbox/collections.svg';
+import ImageSvg from '../../../public/icons/toolbox/image.svg';
 import SquareSvg from '../../../public/icons/toolbox/rectangle.svg';
 import TypeSvg from '../../../public/icons/toolbox/text.svg';
 import YoutubeSvg from '../../../public/icons/toolbox/video-line.svg';
@@ -12,6 +13,7 @@ import { Button } from '../../selectors/Button';
 import { Collections } from '../../selectors/Collections';
 import { Container } from '../../selectors/Container';
 import { CustomCardContent1 } from '../../selectors/CustomCardContent1';
+import { Image } from '../../selectors/Image';
 import { Text } from '../../selectors/Text';
 import { Video } from '../../selectors/Video';
 
@@ -96,6 +98,17 @@ export const Toolbox = () => {
           <Tooltip title="Button" placement="right">
             <Item $move>
               <ButtonSvg viewBox="-4 -3 24 24" />
+            </Item>
+          </Tooltip>
+        </div>
+        <div
+          ref={(ref) => {
+            create(ref, <Image />);
+          }}
+        >
+          <Tooltip title="Image" placement="right">
+            <Item $move>
+              <ImageSvg viewBox="-3 -3 28 28" />
             </Item>
           </Tooltip>
         </div>

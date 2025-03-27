@@ -1,21 +1,126 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 
-import { capitalize, weightDescription } from '../../../utils/text';
-import { ToolbarSection, ToolbarItem } from '../../editor';
-import { ToolbarRadio } from '../../editor/Toolbar/ToolbarRadio';
+import { useEditor, useNode } from "@craftjs/core";
+import { FieldSelector } from "components/editor/Base/FieldSelector";
+import { capitalize, weightDescription } from "../../../utils/text";
+import { ToolbarItem, ToolbarSection } from "../../editor";
+import { ToolbarRadio } from "../../editor/Toolbar/ToolbarRadio";
+import { useCollectionsContext } from "../Collections/CollectionsContext";
 
 export const TextSettings = () => {
+  const { id, actions, props, fields } = useNode((node) => ({
+    props: node.data.props,
+    fields: node.data.props.availableFields,
+  }));
+
+  const { nodes } = useEditor((state) => ({
+    nodes: state.nodes,
+  }));
+
+  // Kiểm tra xem component có nằm trong Collections không
+  const collectionsContext = useCollectionsContext();
+
+  const [availableFields, setAvailableFields] = useState<string[]>([]);
+
+  const isInsideCollections = React.useMemo(() => {
+    // Reset debug state
+    const newDebugState = {
+      contextDetection: false,
+      idDetection: false,
+      customPropDetection: false,
+      finalResult: false,
+    };
+
+    // Phương pháp 1: Kiểm tra context
+    if (
+      collectionsContext &&
+      collectionsContext.index !== undefined &&
+      collectionsContext.index !== -1
+    ) {
+      newDebugState.contextDetection = true;
+    }
+
+    // Phương pháp 2: Kiểm tra parent node ID pattern
+    try {
+      const currentNode = nodes[id];
+      if (currentNode && currentNode.data && currentNode.data.parent) {
+        const parentId = currentNode.data.parent;
+        if (parentId && parentId.includes("-item-")) {
+          newDebugState.idDetection = true;
+        }
+
+        // Phương pháp 3: Kiểm tra custom props
+        const parentNode = nodes[parentId];
+        if (parentNode && parentNode.data && parentNode.data.custom) {
+          const custom = parentNode.data.custom;
+          const isItemContainer =
+            custom.displayName?.includes("item") ||
+            custom.displayName?.includes("product") ||
+            Object.keys(custom).some(
+              (key) => key === "item" || key === "product"
+            );
+
+          if (isItemContainer) {
+            newDebugState.customPropDetection = true;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error in ID detection:", err);
+    }
+
+    // Kết quả cuối cùng: sử dụng bất kỳ phương pháp nào phát hiện thành công
+    const result =
+      newDebugState.contextDetection ||
+      newDebugState.idDetection ||
+      newDebugState.customPropDetection;
+
+    newDebugState.finalResult = result;
+
+    return result;
+  }, [collectionsContext, id, nodes]);
+
+  useEffect(() => {
+    if (isInsideCollections) {
+      setAvailableFields(fields);
+    }
+  }, [fields, isInsideCollections]);
+
   return (
     <React.Fragment>
+      {isInsideCollections && (
+        <ToolbarSection title="Data Binding">
+          <ToolbarItem
+            propKey="useDataBinding"
+            type="checkbox"
+            label="Sử dụng dữ liệu từ Collections"
+          />
+          {props.useDataBinding && (
+            <ToolbarItem propKey="field" type="select" label="Original Price">
+              {availableFields?.length && (
+                <FieldSelector fields={availableFields} />
+              )}
+            </ToolbarItem>
+          )}
+        </ToolbarSection>
+      )}
+
       <ToolbarSection
         title="Typography"
-        props={['fontSize', 'fontWeight', 'textAlign']}
+        props={["fontSize", "fontWeight", "textAlign"]}
         summary={({ fontSize, fontWeight, textAlign }: any) => {
-          return `${fontSize || ''}, ${weightDescription(
+          return `${fontSize || ""}, ${weightDescription(
             parseInt(fontWeight)
           )}, ${capitalize(textAlign)}`;
         }}
       >
+        <ToolbarItem
+          full={true}
+          propKey="text"
+          type="text"
+          label="Text"
+          {...(props.useDataBinding && { disabled: true })}
+        />
         <ToolbarItem
           full={true}
           propKey="fontSize"
@@ -35,7 +140,7 @@ export const TextSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Margin"
-        props={['margin']}
+        props={["margin"]}
         summary={({ margin }: any) => {
           return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${
             margin[3] || 0
@@ -49,7 +154,7 @@ export const TextSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Appearance"
-        props={['color', 'shadow']}
+        props={["color", "shadow"]}
         summary={({ color, shadow }: any) => {
           return (
             <div className="fletext-right">

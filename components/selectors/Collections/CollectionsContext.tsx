@@ -12,7 +12,7 @@ interface CollectionsContextType {
 
 // Tạo context với giá trị mặc định
 export const CollectionsContext = createContext<CollectionsContextType>({
-  item: null,
+  item: {},  
   index: -1,
   itemVariable: 'item',
   fields: [

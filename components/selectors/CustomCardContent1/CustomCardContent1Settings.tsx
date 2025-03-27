@@ -1,28 +1,15 @@
-import { useEditor, useNode } from '@craftjs/core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-import { ToolbarItem, ToolbarSection } from '../../editor';
-import { useCollectionsContext } from '../Collections/CollectionsContext';
-
-// Component để hiển thị các option field trong select
-const FieldSelector: React.FC<{
-  fields: string[];
-}> = ({ fields }) => (
-  <>
-    <option value="">Không sử dụng</option>
-    {fields.map((field) => (
-      <option key={field} value={field}>
-        {field}
-      </option>
-    ))}
-  </>
-);
+import { useEditor, useNode } from "@craftjs/core";
+import { FieldSelector } from "components/editor/Base/FieldSelector";
+import { ToolbarItem, ToolbarSection } from "../../editor";
+import { useCollectionsContext } from "../Collections/CollectionsContext";
 
 // Component để đảm bảo hiển thị các ToolbarItems
 const SettingsEnhancer = ({ children }) => {
   useEffect(() => {
     // Thêm CSS để ghi đè lên các style có thể ngăn ToolbarItem hiển thị
-    const styleEl = document.createElement('style');
+    const styleEl = document.createElement("style");
     styleEl.innerHTML = `
       /* Force hiển thị các ToolbarItem */
       .craftjs-settings {
@@ -102,7 +89,7 @@ export const CustomCardContent1Settings = () => {
       const currentNode = nodes[id];
       if (currentNode && currentNode.data && currentNode.data.parent) {
         const parentId = currentNode.data.parent;
-        if (parentId && parentId.includes('-item-')) {
+        if (parentId && parentId.includes("-item-")) {
           newDebugState.idDetection = true;
         }
 
@@ -111,10 +98,10 @@ export const CustomCardContent1Settings = () => {
         if (parentNode && parentNode.data && parentNode.data.custom) {
           const custom = parentNode.data.custom;
           const isItemContainer =
-            custom.displayName?.includes('item') ||
-            custom.displayName?.includes('product') ||
+            custom.displayName?.includes("item") ||
+            custom.displayName?.includes("product") ||
             Object.keys(custom).some(
-              (key) => key === 'item' || key === 'product'
+              (key) => key === "item" || key === "product"
             );
 
           if (isItemContainer) {
@@ -123,7 +110,7 @@ export const CustomCardContent1Settings = () => {
         }
       }
     } catch (err) {
-      console.error('Error in ID detection:', err);
+      console.error("Error in ID detection:", err);
     }
 
     // Kết quả cuối cùng: sử dụng bất kỳ phương pháp nào phát hiện thành công
@@ -154,22 +141,22 @@ export const CustomCardContent1Settings = () => {
     const interval = setInterval(() => {
       try {
         // Tìm tất cả các phần tử settings
-        const settingsPanel = document.querySelector('.craftjs-settings');
+        const settingsPanel = document.querySelector(".craftjs-settings");
         if (settingsPanel) {
           // Tìm các ToolbarItem trong settings và đảm bảo chúng hiển thị
-          const toolbarItems = settingsPanel.querySelectorAll('.MuiGrid-item');
+          const toolbarItems = settingsPanel.querySelectorAll(".MuiGrid-item");
           if (toolbarItems.length > 0) {
             toolbarItems.forEach((item) => {
-              (item as HTMLElement).style.display = 'block';
-              (item as HTMLElement).style.visibility = 'visible';
-              (item as HTMLElement).style.opacity = '1';
+              (item as HTMLElement).style.display = "block";
+              (item as HTMLElement).style.visibility = "visible";
+              (item as HTMLElement).style.opacity = "1";
             });
 
             // Đảm bảo input và select elements cũng hiển thị và có thể tương tác
-            const inputs = settingsPanel.querySelectorAll('input, select');
+            const inputs = settingsPanel.querySelectorAll("input, select");
             inputs.forEach((input) => {
-              (input as HTMLElement).style.pointerEvents = 'auto';
-              (input as HTMLElement).style.display = 'block';
+              (input as HTMLElement).style.pointerEvents = "auto";
+              (input as HTMLElement).style.display = "block";
             });
 
             // Sau khi đã áp dụng fixes, ngừng interval
@@ -177,7 +164,7 @@ export const CustomCardContent1Settings = () => {
           }
         }
       } catch (err) {
-        console.error('Error fixing UI display:', err);
+        console.error("Error fixing UI display:", err);
       }
     }, 500);
 
@@ -200,7 +187,7 @@ export const CustomCardContent1Settings = () => {
         <ToolbarItem
           full={true}
           propKey="imageUrl"
-          type={useDataBinding ? 'select' : 'text'}
+          type={useDataBinding ? "select" : "text"}
           label="Image URL"
         >
           {useDataBinding && <FieldSelector fields={availableFields} />}
@@ -210,21 +197,21 @@ export const CustomCardContent1Settings = () => {
         <ToolbarItem
           full={true}
           propKey="title"
-          type={useDataBinding ? 'select' : 'text'}
+          type={useDataBinding ? "select" : "text"}
           label="Product Title"
         >
           {useDataBinding && <FieldSelector fields={availableFields} />}
         </ToolbarItem>
         <ToolbarItem
           propKey="originalPrice"
-          type={useDataBinding ? 'select' : 'number'}
+          type={useDataBinding ? "select" : "number"}
           label="Original Price"
         >
           {useDataBinding && <FieldSelector fields={availableFields} />}
         </ToolbarItem>
         <ToolbarItem
           propKey="discountedPrice"
-          type={useDataBinding ? 'select' : 'number'}
+          type={useDataBinding ? "select" : "number"}
           label="Discounted Price"
         >
           {useDataBinding && <FieldSelector fields={availableFields} />}
@@ -239,7 +226,7 @@ export const CustomCardContent1Settings = () => {
         {showVoucher && (
           <ToolbarItem
             propKey="voucherCode"
-            type={useDataBinding ? 'select' : 'text'}
+            type={useDataBinding ? "select" : "text"}
             label="Voucher Code"
           >
             {useDataBinding && <FieldSelector fields={availableFields} />}

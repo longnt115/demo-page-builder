@@ -1,7 +1,7 @@
-import { useNode } from "@craftjs/core";
 import { FormControlLabel, Radio } from "@mui/material";
 import { useEffect, useState } from "react";
 
+import { useNode } from "@craftjs/core";
 import { ToolbarItem, ToolbarSection } from "../../editor";
 
 export const CollectionsSettings = () => {

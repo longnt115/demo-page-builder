@@ -9,6 +9,7 @@ import {
   Collections,
   Container,
   CustomCardContent1,
+  Image,
   Text,
 } from "../components/selectors";
 import { Button } from "../components/selectors/Button";
@@ -83,6 +84,7 @@ function App() {
             Video,
             CustomCardContent1,
             Collections,
+            Image,
           }}
           enabled={true}
           onRender={RenderNode}
