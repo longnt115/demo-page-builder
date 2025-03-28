@@ -7,33 +7,6 @@ import { ToolbarItem, ToolbarSection } from "../../editor";
 import { ToolbarRadio } from "../../editor/Toolbar/ToolbarRadio";
 import { useCollectionsContext } from "../Collections/CollectionsContext";
 
-// Tạo hàm wrap đối tượng để tránh lỗi circular references khi serialize
-const wrapForSerialization = (obj: any): any => {
-  // Biến đổi các giá trị không serialize được
-  if (!obj || typeof obj !== "object") return obj;
-  
-  // Đơn giản hóa dữ liệu trước khi lưu
-  const safeObj: any = {};
-  Object.keys(obj).forEach(key => {
-    const val = obj[key];
-    if (
-      val !== undefined &&
-      val !== null &&
-      typeof val !== "function" &&
-      typeof val !== "symbol"
-    ) {
-      // Chuyển đối tượng phức tạp thành chuỗi an toàn
-      if (typeof val === "object" && !(val instanceof Array)) {
-        safeObj[key] = JSON.stringify(val);
-      } else {
-        safeObj[key] = val;
-      }
-    }
-  });
-  
-  return safeObj;
-};
-
 export const ImageSettings = () => {
   const { id, actions, props, fields } = useNode((node) => ({
     props: node.data.props,
@@ -97,21 +70,6 @@ export const ImageSettings = () => {
       setAvailableFields(fields);
     }
   }, [fields, isInsideCollections]);
-
-  // Xử lý dữ liệu trước khi serialize để tránh lỗi lưu trang
-  useEffect(() => {
-    try {
-      // Áp dụng biến đổi cho props để giảm thiểu lỗi serialize
-      const wrappedProps = wrapForSerialization(props);
-      
-      // Nếu có sự thay đổi, cập nhật lại props
-      if (JSON.stringify(wrappedProps) !== JSON.stringify(props)) {
-        console.log("Đã xử lý props cho an toàn khi serialize");
-      }
-    } catch (error) {
-      console.error("Lỗi khi xử lý props:", error);
-    }
-  }, [props]);
 
   return (
     <React.Fragment>

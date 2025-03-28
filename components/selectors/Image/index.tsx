@@ -20,42 +20,6 @@ export type ImageProps = {
   availableFields?: string[];
 };
 
-// Hàm serialize an toàn để tránh lỗi khi lưu trang
-const safeSerialize = (obj: any): any => {
-  if (!obj || typeof obj !== "object") return obj;
-
-  // Xử lý array
-  if (Array.isArray(obj)) {
-    return obj.map((item) => safeSerialize(item));
-  }
-
-  // Xử lý object
-  const result: any = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      // Bỏ qua các giá trị có thể gây lỗi khi serialize
-      if (
-        obj[key] !== undefined &&
-        obj[key] !== null &&
-        typeof obj[key] !== "function" &&
-        typeof obj[key] !== "symbol" &&
-        !(obj[key] instanceof Element) &&
-        !(obj[key] instanceof HTMLElement)
-      ) {
-        try {
-          // Thử kiểm tra xem có serialize được không
-          JSON.stringify(obj[key]);
-          result[key] = safeSerialize(obj[key]);
-        } catch (e) {
-          // Nếu lỗi khi serialize, chuyển thành string an toàn
-          result[key] = `[Không thể serialize: ${typeof obj[key]}]`;
-        }
-      }
-    }
-  }
-  return result;
-};
-
 export const Image = ({
   src,
   alt,
@@ -175,11 +139,6 @@ export const Image = ({
       )}
     </div>
   );
-};
-
-// Thêm hàm toJSON để đảm bảo serialize an toàn
-(Image as any).toJSON = function () {
-  return safeSerialize(this);
 };
 
 Image.craft = {

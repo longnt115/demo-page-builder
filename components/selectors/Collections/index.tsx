@@ -1,15 +1,15 @@
-import { Element, useNode } from '@craftjs/core';
-import React, { useState, useEffect, useCallback } from 'react';
+import { Element, useNode } from "@craftjs/core";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { CollectionsProvider } from './CollectionsContext';
-import { CollectionsSettings } from './CollectionsSettings';
+import { CollectionsSettings } from "./CollectionsSettings";
 
-import { Container } from '../Container';
-import { Resizer } from '../Resizer';
+import { Container } from "../Container";
+import { Resizer } from "../Resizer";
+import { CollectionsProvider } from "./CollectionsContext";
 
 export type CollectionsProps = {
-  background: Record<'r' | 'g' | 'b' | 'a', number>;
-  color: Record<'r' | 'g' | 'b' | 'a', number>;
+  background: Record<"r" | "g" | "b" | "a", number>;
+  color: Record<"r" | "g" | "b" | "a", number>;
   padding: string[];
   margin: string[];
   width: string;
@@ -21,13 +21,13 @@ export type CollectionsProps = {
   // Thuộc tính mới cho data binding
   data: any[];
   itemVariable: string;
-  layout: 'grid' | 'list' | 'flex' | 'custom';
-  renderMode: 'columns' | 'data';
+  layout: "grid" | "list" | "flex" | "custom";
+  renderMode: "columns" | "data";
   gridGap: string;
   itemsPerRow: number;
   fields: string[];
   // Thuộc tính cho nguồn dữ liệu
-  dataSource: 'static' | 'api' | 'json';
+  dataSource: "static" | "api" | "json";
   // Thuộc tính cho API
   apiUrl: string;
   apiEnabled: boolean;
@@ -41,31 +41,31 @@ export type CollectionsProps = {
 const defaultProps = {
   background: { r: 255, g: 255, b: 255, a: 1 },
   color: { r: 0, g: 0, b: 0, a: 1 },
-  padding: ['20', '20', '20', '20'],
-  margin: ['0', '0', '0', '0'],
+  padding: ["20", "20", "20", "20"],
+  margin: ["0", "0", "0", "0"],
   shadow: 0,
   radius: 0,
-  width: '100%',
-  height: 'auto',
+  width: "100%",
+  height: "auto",
   columns: 3,
   // Giá trị mặc định cho thuộc tính mới
   data: [],
-  itemVariable: 'item',
-  layout: 'grid' as const,
-  renderMode: 'columns' as const,
-  gridGap: '16px',
+  itemVariable: "item",
+  layout: "grid" as const,
+  renderMode: "columns" as const,
+  gridGap: "16px",
   itemsPerRow: 3,
   fields: [],
   // Nguồn dữ liệu mặc định
-  dataSource: 'static' as const,
+  dataSource: "static" as const,
   // Giá trị mặc định cho API
-  apiUrl: '',
+  apiUrl: "",
   apiEnabled: false,
-  apiDataPath: 'data',
+  apiDataPath: "data",
   apiRefreshInterval: 0,
   // Giá trị mặc định cho JSON
-  jsonData: '',
-  jsonDataPath: 'data',
+  jsonData: "",
+  jsonDataPath: "data",
 };
 
 export const Collections = (props: Partial<CollectionsProps>) => {
@@ -109,36 +109,39 @@ export const Collections = (props: Partial<CollectionsProps>) => {
   const [jsonDataError, setJsonDataError] = useState<string | null>(null);
 
   // Using useNode to connect to the Craft.js system
-  const { id, actions: { setProp } } = useNode((node) => ({
+  const {
+    id,
+    actions: { setProp },
+  } = useNode((node) => ({
     id: node.id,
   }));
 
   // Hàm fetch dữ liệu từ API
   const fetchData = useCallback(async () => {
     if (!apiEnabled || !apiUrl) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(apiUrl);
-      
+
       if (!response.ok) {
         throw new Error(`API trả về lỗi: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       // Lấy dữ liệu theo đường dẫn
       let fetchedData = result;
       if (apiDataPath) {
-        const paths = apiDataPath.split('.');
+        const paths = apiDataPath.split(".");
         for (const path of paths) {
           fetchedData = fetchedData?.[path];
           if (!fetchedData) break;
         }
       }
-      
+
       if (Array.isArray(fetchedData)) {
         setApiData(fetchedData);
         // Cập nhật trường dữ liệu nếu có
@@ -147,32 +150,32 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           setProp((p) => (p.fields = newFields));
         }
       } else {
-        throw new Error('Dữ liệu không phải dạng mảng');
+        throw new Error("Dữ liệu không phải dạng mảng");
       }
     } catch (err: any) {
-      setError(err.message || 'Lỗi khi tải dữ liệu từ API');
+      setError(err.message || "Lỗi khi tải dữ liệu từ API");
     } finally {
       setIsLoading(false);
     }
   }, [apiUrl, apiEnabled, apiDataPath, setProp]);
-  
+
   // Hàm tải dữ liệu từ JSON
   const loadJsonData = useCallback(() => {
     if (!jsonData) return;
-    
+
     try {
       const jsonDataParsed = JSON.parse(jsonData);
-      
+
       // Lấy dữ liệu theo đường dẫn
       let jsonDataLoaded = jsonDataParsed;
       if (jsonDataPath) {
-        const paths = jsonDataPath.split('.');
+        const paths = jsonDataPath.split(".");
         for (const path of paths) {
           jsonDataLoaded = jsonDataLoaded?.[path];
           if (!jsonDataLoaded) break;
         }
       }
-      
+
       if (Array.isArray(jsonDataLoaded)) {
         setJsonDataLoaded(jsonDataLoaded);
         // Cập nhật trường dữ liệu nếu có
@@ -181,23 +184,23 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           setProp((p) => (p.fields = newFields));
         }
       } else {
-        throw new Error('Dữ liệu không phải dạng mảng');
+        throw new Error("Dữ liệu không phải dạng mảng");
       }
     } catch (err: any) {
-      setJsonDataError(err.message || 'Lỗi khi tải dữ liệu từ JSON');
+      setJsonDataError(err.message || "Lỗi khi tải dữ liệu từ JSON");
     }
   }, [jsonData, jsonDataPath, setProp]);
-  
+
   // Thiết lập fetch API và interval refresh
   useEffect(() => {
     if (apiEnabled) {
       fetchData();
-      
+
       if (apiRefreshInterval && apiRefreshInterval > 0) {
         const interval = setInterval(fetchData, apiRefreshInterval);
         return () => clearInterval(interval);
       }
-    } else if (dataSource === 'json') {
+    } else if (dataSource === "json") {
       loadJsonData();
     }
   }, [fetchData, apiEnabled, apiRefreshInterval, loadJsonData, dataSource]);
@@ -216,13 +219,13 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           is={Container}
           width={columnWidth}
           height="100%"
-          padding={['10', '10', '10', '10']}
+          padding={["10", "10", "10", "10"]}
           custom={{ displayName: `Column ${i + 1}` }}
-        >
-          {i === 0 && children}
-        </Element>
+        ></Element>
       );
     }
+
+    console.log(columnElements);
 
     return columnElements;
   };
@@ -232,17 +235,21 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     // Dùng dữ liệu từ nguồn dữ liệu được chọn
     let displayData;
     switch (dataSource) {
-      case 'api':
+      case "api":
         displayData = apiData;
         break;
-      case 'json':
+      case "json":
         displayData = jsonDataLoaded;
         break;
       default:
         displayData = data;
     }
-    
-    if (!displayData || !Array.isArray(displayData) || displayData.length === 0) {
+
+    if (
+      !displayData ||
+      !Array.isArray(displayData) ||
+      displayData.length === 0
+    ) {
       // Hiển thị trạng thái loading nếu đang tải
       if (apiEnabled && isLoading) {
         return (
@@ -251,7 +258,7 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           </div>
         );
       }
-      
+
       // Hiển thị lỗi nếu có
       if (apiEnabled && error) {
         return (
@@ -261,8 +268,8 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           </div>
         );
       }
-      
-      if (dataSource === 'json' && jsonDataError) {
+
+      if (dataSource === "json" && jsonDataError) {
         return (
           <div className="w-full p-4 text-center text-red-500">
             <div className="mb-2">❌ Lỗi khi tải dữ liệu từ JSON</div>
@@ -270,33 +277,20 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           </div>
         );
       }
-      
+
       // Fallback: Hiển thị một mục mẫu nếu không có dữ liệu
       return (
-        <CollectionsProvider
-          value={{
-            item: { sample: 'Sample Data' },
-            index: 0,
-            itemVariable,
-            fields: fields || [],
-            isLoading,
-            error,
+        <Element
+          key="sample-item"
+          id={`${id}-sample-item`}
+          canvas
+          is={Container}
+          custom={{
+            displayName: `${itemVariable} (Sample)`,
+            border: "1px dashed #ddd",
           }}
-        >
-          <Element
-            key="sample-item"
-            id={`${id}-sample-item`}
-            canvas
-            is={Container}
-            custom={{
-              displayName: `${itemVariable} (Sample)`,
-              border: '1px dashed #ddd',
-            }}
-            padding={['10', '10', '10', '10']}
-          >
-            {children}
-          </Element>
-        </CollectionsProvider>
+          padding={["10", "10", "10", "10"]}
+        ></Element>
       );
     }
 
@@ -314,49 +308,44 @@ export const Collections = (props: Partial<CollectionsProps>) => {
         }}
       >
         <Element
-          id={`${id}-item-${index}`}
           canvas
+          id={`${id}-item-${index}`}
+          key={`item-${index}`}
           is={Container}
-          padding={['10', '10', '10', '10']}
-          custom={{
-            displayName: `${itemVariable} ${index + 1}`,
-            [itemVariable]: item, // Lưu dữ liệu mục vào thuộc tính tùy chỉnh
-            border: '1px dashed #ddd',
-          }}
-        >
-          {index === 0 && children}
-        </Element>
+          padding={["10", "10", "10", "10"]}
+          custom={{ displayName: `${itemVariable}` }}
+        ></Element>
       </CollectionsProvider>
     ));
   };
 
   // Xác định kiểu bố cục
   const getLayoutStyle = () => {
-    if (renderMode === 'columns') {
+    if (renderMode === "columns") {
       return {
-        display: 'flex',
-        flexDirection: 'row' as const,
+        display: "flex",
+        flexDirection: "row" as const,
       };
     }
 
     switch (layout) {
-      case 'list':
+      case "list":
         return {
-          display: 'flex',
-          flexDirection: 'column' as const,
+          display: "flex",
+          flexDirection: "column" as const,
           gap: gridGap,
         };
-      case 'flex':
+      case "flex":
         return {
-          display: 'flex',
-          flexDirection: 'row' as const,
-          flexWrap: 'wrap' as const,
+          display: "flex",
+          flexDirection: "row" as const,
+          flexWrap: "wrap" as const,
           gap: gridGap,
         };
-      case 'grid':
+      case "grid":
       default:
         return {
-          display: 'grid',
+          display: "grid",
           gridTemplateColumns: `repeat(${itemsPerRow}, 1fr)`,
           gap: gridGap,
         };
@@ -365,7 +354,7 @@ export const Collections = (props: Partial<CollectionsProps>) => {
 
   return (
     <Resizer
-      propKey={{ width: 'width', height: 'height' }}
+      propKey={{ width: "width", height: "height" }}
       style={{
         background: `rgba(${Object.values(background)})`,
         color: `rgba(${Object.values(color)})`,
@@ -373,19 +362,19 @@ export const Collections = (props: Partial<CollectionsProps>) => {
         margin: `${margin[0]}px ${margin[1]}px ${margin[2]}px ${margin[3]}px`,
         boxShadow:
           shadow === 0
-            ? 'none'
+            ? "none"
             : `0px 3px 100px ${shadow}px rgba(0, 0, 0, 0.13)`,
         borderRadius: `${radius}px`,
         ...getLayoutStyle(),
       }}
     >
-      {renderMode === 'columns' ? renderColumns() : renderDataItems()}
+      {renderMode === "columns" ? renderColumns() : renderDataItems()}
     </Resizer>
   );
 };
 
 Collections.craft = {
-  displayName: 'Collections',
+  displayName: "Collections",
   props: defaultProps,
   rules: {
     canDrag: () => true,
