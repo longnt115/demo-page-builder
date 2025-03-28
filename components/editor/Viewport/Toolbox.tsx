@@ -1,26 +1,24 @@
-import { Element, useEditor } from '@craftjs/core';
-import { Tooltip } from '@mui/material';
-import { styled } from 'styled-components';
+import { Element, useEditor } from "@craftjs/core";
+import { Tooltip } from "@mui/material";
+import { styled } from "styled-components";
 
-import ButtonSvg from '../../../public/icons/toolbox/button.svg';
-import CardSvg from '../../../public/icons/toolbox/card.svg';
-import CollectionsSvg from '../../../public/icons/toolbox/collections.svg';
-import ImageSvg from '../../../public/icons/toolbox/image.svg';
-import SquareSvg from '../../../public/icons/toolbox/rectangle.svg';
-import TypeSvg from '../../../public/icons/toolbox/text.svg';
-import YoutubeSvg from '../../../public/icons/toolbox/video-line.svg';
-import { Button } from '../../selectors/Button';
-import { Collections } from '../../selectors/Collections';
-import { Container } from '../../selectors/Container';
-import { CustomCardContent1 } from '../../selectors/CustomCardContent1';
-import { Image } from '../../selectors/Image';
-import { Text } from '../../selectors/Text';
-import { Video } from '../../selectors/Video';
+import ButtonSvg from "../../../public/icons/toolbox/button.svg";
+import CollectionsSvg from "../../../public/icons/toolbox/collections.svg";
+import ImageSvg from "../../../public/icons/toolbox/image.svg";
+import SquareSvg from "../../../public/icons/toolbox/rectangle.svg";
+import TypeSvg from "../../../public/icons/toolbox/text.svg";
+import YoutubeSvg from "../../../public/icons/toolbox/video-line.svg";
+import { Button } from "../../selectors/Button";
+import { Collections } from "../../selectors/Collections";
+import { Container } from "../../selectors/Container";
+import { Image } from "../../selectors/Image";
+import { Text } from "../../selectors/Text";
+import { Video } from "../../selectors/Video";
 
 const ToolboxDiv = styled.div<{ $enabled: boolean }>`
   transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-  ${(props) => (!props.$enabled ? `width: 0;` : '')}
-  ${(props) => (!props.$enabled ? `opacity: 0;` : '')}
+  ${(props) => (!props.$enabled ? `width: 0;` : "")}
+  ${(props) => (!props.$enabled ? `opacity: 0;` : "")}
 `;
 
 const Item = styled.a<{ $move?: boolean }>`
@@ -120,17 +118,6 @@ export const Toolbox = () => {
           <Tooltip title="Video" placement="right">
             <Item $move>
               <YoutubeSvg viewBox="-3 -3 28 28" />
-            </Item>
-          </Tooltip>
-        </div>
-        <div
-          ref={(ref) => {
-            create(ref, <CustomCardContent1 />);
-          }}
-        >
-          <Tooltip title="Custom Card Content 1" placement="right">
-            <Item $move>
-              <CardSvg viewBox="-3 -3 28 28" />
             </Item>
           </Tooltip>
         </div>

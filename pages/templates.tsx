@@ -7,12 +7,7 @@ import { useEffect, useState } from "react";
 
 import { TemplatePreview } from "components/TemplatePreview";
 import { RenderNode } from "../components/editor";
-import {
-  Collections,
-  Container,
-  CustomCardContent1,
-  Text,
-} from "../components/selectors";
+import { Collections, Container, Text } from "../components/selectors";
 import { Button } from "../components/selectors/Button";
 import { Custom1, OnlyButtons } from "../components/selectors/Custom1";
 import { Custom2, Custom2VideoDrop } from "../components/selectors/Custom2";
@@ -257,7 +252,6 @@ const TemplatesPage = () => {
                             OnlyButtons,
                             Button,
                             Video,
-                            CustomCardContent1,
                             Collections,
                           }}
                           enabled={false}

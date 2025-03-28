@@ -205,6 +205,17 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     }
   }, [fetchData, apiEnabled, apiRefreshInterval, loadJsonData, dataSource]);
 
+  // Tính toán dữ liệu hiển thị dựa trên nguồn
+  const getDisplayItems = useCallback(() => {
+    if (dataSource === "api" && apiData.length > 0) {
+      return apiData;
+    } else if (dataSource === "json" && jsonDataLoaded.length > 0) {
+      return jsonDataLoaded;
+    } else {
+      return data;
+    }
+  }, [data, dataSource, apiData, jsonDataLoaded]);
+
   // Render columns (legacy mode)
   const renderColumns = () => {
     const columnElements = [];
@@ -225,30 +236,18 @@ export const Collections = (props: Partial<CollectionsProps>) => {
       );
     }
 
-    console.log(columnElements);
-
     return columnElements;
   };
 
   // Render data items
   const renderDataItems = () => {
     // Dùng dữ liệu từ nguồn dữ liệu được chọn
-    let displayData;
-    switch (dataSource) {
-      case "api":
-        displayData = apiData;
-        break;
-      case "json":
-        displayData = jsonDataLoaded;
-        break;
-      default:
-        displayData = data;
-    }
+    const displayItems = getDisplayItems();
 
     if (
-      !displayData ||
-      !Array.isArray(displayData) ||
-      displayData.length === 0
+      !displayItems ||
+      !Array.isArray(displayItems) ||
+      displayItems.length === 0
     ) {
       // Hiển thị trạng thái loading nếu đang tải
       if (apiEnabled && isLoading) {
@@ -295,7 +294,9 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     }
 
     // Hiển thị danh sách dữ liệu thực tế
-    return displayData.map((item, index) => (
+    // WebStudio-like approach: Khi một item được chỉnh sửa, tất cả các item được cập nhật
+    // vì cùng sử dụng một template (children)
+    return displayItems.map((item, index) => (
       <CollectionsProvider
         key={`${id}-item-${index}`}
         value={{
@@ -314,7 +315,9 @@ export const Collections = (props: Partial<CollectionsProps>) => {
           is={Container}
           padding={["10", "10", "10", "10"]}
           custom={{ displayName: `${itemVariable}` }}
-        ></Element>
+        >
+          {children}
+        </Element>
       </CollectionsProvider>
     ));
   };
@@ -356,15 +359,18 @@ export const Collections = (props: Partial<CollectionsProps>) => {
     <Resizer
       propKey={{ width: "width", height: "height" }}
       style={{
-        background: `rgba(${Object.values(background)})`,
-        color: `rgba(${Object.values(color)})`,
+        overflow: "hidden",
+        backgroundColor: `rgba(${background.r}, ${background.g}, ${background.b}, ${background.a})`,
+        color: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
         padding: `${padding[0]}px ${padding[1]}px ${padding[2]}px ${padding[3]}px`,
         margin: `${margin[0]}px ${margin[1]}px ${margin[2]}px ${margin[3]}px`,
         boxShadow:
           shadow === 0
             ? "none"
-            : `0px 3px 100px ${shadow}px rgba(0, 0, 0, 0.13)`,
+            : `0px 3px ${shadow}px 0px rgba(0,0,0,0.2)`,
         borderRadius: `${radius}px`,
+        width: props.width,
+        height: props.height,
         ...getLayoutStyle(),
       }}
     >

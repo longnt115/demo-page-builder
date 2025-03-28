@@ -8,7 +8,6 @@ import { RenderNode, Viewport } from "../components/editor";
 import {
   Collections,
   Container,
-  CustomCardContent1,
   Image,
   Text,
 } from "../components/selectors";
@@ -82,7 +81,6 @@ function App() {
             OnlyButtons,
             Button,
             Video,
-            CustomCardContent1,
             Collections,
             Image,
           }}
@@ -101,7 +99,7 @@ function App() {
                 padding={["40", "40", "40", "40"]}
                 custom={{ displayName: "App" }}
               >
-                <Element
+                {/* <Element
                   canvas
                   is={Container}
                   flexDirection="row"
@@ -414,7 +412,7 @@ function App() {
                       />
                     </Element>
                   </Element>
-                </Element>
+                </Element> */}
               </Element>
             </Frame>
           </Viewport>
