@@ -54,8 +54,7 @@ export const Text = ({
   const displayText = React.useMemo(() => {
     if (!(useDataBinding && field && collectionsContext?.item)) return text;
 
-    if (typeof collectionsContext.item[field] === "object") return text;
-    return collectionsContext.item[field].toString();
+    return JSON.stringify(collectionsContext.item[field]);
   }, [useDataBinding, field, collectionsContext?.item, text]);
 
   return (

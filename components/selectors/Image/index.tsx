@@ -70,11 +70,14 @@ export const Image = ({
 
   // Lấy URL ảnh từ dữ liệu Collections nếu được kích hoạt
   const imageUrl = React.useMemo(() => {
+    setHasError(false);
     if (useDataBinding && field && collectionsContext?.item) {
       return collectionsContext.item[field] || src;
     }
     return src;
   }, [useDataBinding, field, collectionsContext?.item, src]);
+
+  console.log(imageUrl);
 
   // Xử lý sự kiện lỗi khi tải ảnh
   const handleError = () => {
@@ -116,7 +119,7 @@ export const Image = ({
 
   return (
     <div ref={containerRef} style={containerStyle}>
-      {(!imageUrl || hasError) ? (
+      {!imageUrl || hasError ? (
         <div
           style={{
             color: "#888",
