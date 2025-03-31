@@ -116,16 +116,21 @@ export const ToolbarItem = ({
             </RadioGroup>
           </>
         ) : type === 'select' ? (
-          <ToolbarDropdown
-            value={value || ''}
-            onChange={(value) =>
-              setProp(
-                (props: any) =>
-                  (props[propKey] = onChange ? onChange(value) : value)
-              )
-            }
-            {...props}
-          />
+          <>
+            {props.label ? (
+              <h4 className="text-sm text-light-gray-2">{props.label}</h4>
+            ) : null}
+            <ToolbarDropdown
+              value={value || ''}
+              onChange={(value) =>
+                setProp(
+                  (props: any) =>
+                    (props[propKey] = onChange ? onChange(value) : value)
+                )
+              }
+              {...props}
+            />
+          </>
         ) : type === 'checkbox' ? (
           <FormControlLabel
             control={

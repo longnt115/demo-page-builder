@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormControlLabel, Radio } from "@mui/material";
+import { FormControlLabel, Radio, MenuItem, Select, TextField, Checkbox, FormControl, InputLabel } from "@mui/material";
 
 import { useEditor, useNode } from "@craftjs/core";
 import { FieldSelector } from "components/editor/Base/FieldSelector";
@@ -71,33 +71,127 @@ export const ImageSettings = () => {
     }
   }, [fields, isInsideCollections]);
 
+  // Danh sách các toán tử so sánh
+  const operatorOptions = [
+    { value: "equals", label: "Bằng (=)" },
+    { value: "notEquals", label: "Không bằng (≠)" },
+    { value: "contains", label: "Chứa" },
+    { value: "startsWith", label: "Bắt đầu với" },
+    { value: "endsWith", label: "Kết thúc với" },
+    { value: "greaterThan", label: "Lớn hơn (>)" },
+    { value: "lessThan", label: "Nhỏ hơn (<)" },
+    { value: "isEmpty", label: "Rỗng" },
+    { value: "isNotEmpty", label: "Không rỗng" },
+    { value: "isTrue", label: "Là True" },
+    { value: "isFalse", label: "Là False" },
+  ];
+
+  // Xác định xem có cần hiển thị trường nhập giá trị không
+  const needsValueInput = React.useMemo(() => {
+    const noValueOperators = ["isEmpty", "isNotEmpty", "isTrue", "isFalse"];
+    return !noValueOperators.includes(props.conditionOperator || "");
+  }, [props.conditionOperator]);
+
   return (
     <React.Fragment>
       {isInsideCollections && (
-        <ToolbarSection title="Data Binding">
-          <ToolbarItem
-            propKey="useDataBinding"
-            type="checkbox"
-            label="Sử dụng dữ liệu từ Collections"
-          />
-          {props.useDataBinding && (
-            <ToolbarItem propKey="field" type="select" label="Trường URL ảnh">
-              {availableFields?.length > 0 && (
-                <FieldSelector fields={availableFields} />
-              )}
-            </ToolbarItem>
-          )}
-        </ToolbarSection>
+        <>
+          <ToolbarSection title="Data Binding">
+            <ToolbarItem
+              propKey="useDataBinding"
+              type="checkbox"
+              label="Sử dụng dữ liệu từ Collections"
+            />
+            {props.useDataBinding && (
+              <ToolbarItem propKey="field" type="select" label="Trường URL ảnh">
+                {availableFields?.length > 0 && (
+                  <FieldSelector fields={availableFields} />
+                )}
+              </ToolbarItem>
+            )}
+          </ToolbarSection>
+
+          {/* Section mới cho Conditional Rendering */}
+          <ToolbarSection
+            title="Điều kiện hiển thị"
+            props={["enableCondition", "conditionField", "conditionOperator", "conditionValue", "conditionNegate"]}
+            summary={({ enableCondition }: any) => {
+              return enableCondition ? "Đã kích hoạt" : "Không kích hoạt";
+            }}
+          >
+            <ToolbarItem
+              propKey="enableCondition"
+              type="checkbox"
+              label="Bật điều kiện hiển thị"
+            />
+
+            {props.enableCondition && (
+              <>
+                <ToolbarItem
+                  propKey="conditionField"
+                  type="select"
+                  label="Trường dữ liệu"
+                >
+                  {availableFields?.length > 0 && (
+                    <FieldSelector fields={availableFields} />
+                  )}
+                </ToolbarItem>
+
+                <ToolbarItem
+                  propKey="conditionOperator"
+                  type="select"
+                  label="Toán tử so sánh"
+                >
+                  {operatorOptions.map((op) => (
+                    <option key={op.value} value={op.value}>
+                      {op.label}
+                    </option>
+                  ))}
+                </ToolbarItem>
+
+                {needsValueInput && (
+                  <ToolbarItem
+                    propKey="conditionValue"
+                    type="text"
+                    label="Giá trị so sánh"
+                    full={true}
+                  />
+                )}
+
+                <ToolbarItem
+                  propKey="conditionNegate"
+                  type="checkbox"
+                  label="Đảo ngược điều kiện"
+                />
+
+                <div
+                  style={{
+                    fontSize: '12px',
+                    marginTop: '8px',
+                    padding: '8px',
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: '4px',
+                    color: '#666',
+                  }}
+                >
+                  Thành phần này sẽ {props.conditionNegate ? 'ẩn' : 'hiển thị'} khi điều kiện {props.conditionNegate ? 'thỏa mãn' : 'không thỏa mãn'}.
+                </div>
+              </>
+            )}
+          </ToolbarSection>
+        </>
       )}
 
       <ToolbarSection title="Image Source">
-        <ToolbarItem
-          full={true}
-          propKey="src"
-          type="text"
-          label="URL ảnh"
-          {...(props.useDataBinding && { disabled: true })}
-        />
+        {
+          !props.useDataBinding && <ToolbarItem
+            full={true}
+            propKey="src"
+            type="text"
+            label="URL ảnh"
+            {...(props.useDataBinding && { disabled: true })}
+          />
+        }
         <ToolbarItem
           full={true}
           propKey="alt"
@@ -161,9 +255,8 @@ export const ImageSettings = () => {
         title="Margin"
         props={["margin"]}
         summary={({ margin }: any) => {
-          return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${
-            margin[3] || 0
-          }px`;
+          return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${margin[3] || 0
+            }px`;
         }}
       >
         <ToolbarItem propKey="margin" index={0} type="slider" label="Trên" />
@@ -185,6 +278,31 @@ export const ImageSettings = () => {
           type="slider"
           label="Độ đổ bóng"
         />
+      </ToolbarSection>
+      <ToolbarSection
+        title="Styles"
+        props={["zIndex", "opacity", "position"]}
+      >
+        <ToolbarItem
+          full={true}
+          propKey="zIndex"
+          type="text"
+          label="Z-index"
+        />
+        <ToolbarItem
+          full={true}
+          propKey="opacity"
+          type="text"
+          label="Opacity"
+        />
+        <ToolbarItem
+          full={true}
+          propKey="position"
+          type="select"
+          label="Position"
+        >
+          <FieldSelector fields={[ "relative", "static", "fixed", "absolute", "sticky"]} noUse={false} />
+        </ToolbarItem>
       </ToolbarSection>
     </React.Fragment>
   );

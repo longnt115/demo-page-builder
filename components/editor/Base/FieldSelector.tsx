@@ -1,9 +1,12 @@
 // Component để hiển thị các option field trong select
-export const FieldSelector: React.FC<{
+export type FieldSelectorProps = {
   fields: string[];
-}> = ({ fields }) => (
+  noUse?: boolean;  
+};
+
+export const FieldSelector: React.FC<FieldSelectorProps> = ({ fields, noUse = true }) => (
   <>
-    <option value="">Không sử dụng</option>
+    {noUse && <option value="">Không sử dụng</option>}
     {fields.map((field) => (
       <option key={field} value={field}>
         {field}
