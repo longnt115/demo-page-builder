@@ -52,10 +52,10 @@ export const Text = ({
 
   // Lấy nội dung động từ Collections nếu được kích hoạt
   const displayText = React.useMemo(() => {
-    if (useDataBinding && field && collectionsContext?.item) {
-      return collectionsContext.item[field] || text;
-    }
-    return text;
+    if (!(useDataBinding && field && collectionsContext?.item)) return text;
+
+    if (typeof collectionsContext.item[field] === "object") return text;
+    return collectionsContext.item[field].toString();
   }, [useDataBinding, field, collectionsContext?.item, text]);
 
   return (

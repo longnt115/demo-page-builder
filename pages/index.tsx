@@ -4,13 +4,9 @@ import { NextSeo } from "next-seo";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { ChangeNode } from "components/editor/ChangeNode";
 import { RenderNode, Viewport } from "../components/editor";
-import {
-  Collections,
-  Container,
-  Image,
-  Text,
-} from "../components/selectors";
+import { Collections, Container, Image, Text } from "../components/selectors";
 import { Button } from "../components/selectors/Button";
 import { Custom1, OnlyButtons } from "../components/selectors/Custom1";
 import { Custom2, Custom2VideoDrop } from "../components/selectors/Custom2";
@@ -86,6 +82,7 @@ function App() {
           }}
           enabled={true}
           onRender={RenderNode}
+          onNodesChange={ChangeNode}
         >
           <TemplateLoader />
           <Viewport>
