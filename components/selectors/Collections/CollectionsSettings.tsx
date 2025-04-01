@@ -2,6 +2,8 @@ import { FormControlLabel, Radio } from "@mui/material";
 import { useEffect, useState } from "react";
 
 import { useNode } from "@craftjs/core";
+import axios from "axios";
+import { FieldSelector } from "components/editor/Base/FieldSelector";
 import { ToolbarItem, ToolbarSection } from "../../editor";
 
 export const CollectionsSettings = () => {
@@ -27,6 +29,8 @@ export const CollectionsSettings = () => {
   const [apiTestResult, setApiTestResult] = useState<any | null>(null);
   const [apiUrl, setApiUrl] = useState("");
   const [jsonDataPath, setJsonDataPath] = useState("data");
+  const [apiMethod, setApiMethod] = useState("GET");
+  const [apiBody, setApiBody] = useState("");
 
   // Đồng bộ giá trị từ props
   useEffect(() => {
@@ -150,18 +154,32 @@ export const CollectionsSettings = () => {
 
     try {
       // Sử dụng proxy hoặc CORS nếu cần thiết
-      const response = await fetch(currentApiUrl, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      let response = null;
+      const headers = {
+        Accept: "application/json",
+      };
 
-      if (!response.ok) {
+      if (apiMethod === "POST") {
+        response = await axios.post(
+          "https://vnshop.vnpaytest.vn/api/channels/CH1021/products",
+          apiBody,
+          {
+            headers: {
+              "Access-Control-Allow-Origin": true,
+            },
+          }
+        );
+      } else {
+        response = await axios.get(currentApiUrl, {
+          headers,
+        });
+      }
+
+      if (response.status !== 200) {
         throw new Error(`API trả về lỗi: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result = await response.data;
       console.log("Kết quả API:", result);
 
       // Lấy dữ liệu theo đường dẫn
@@ -269,149 +287,6 @@ export const CollectionsSettings = () => {
                 >
                   Áp dụng
                 </button>
-              </div>
-            )}
-
-            {props.dataSource === "json" && (
-              <div>
-                <p style={{ fontSize: "12px", marginTop: "10px" }}>
-                  Nhập chuỗi JSON:
-                </p>
-                <textarea
-                  value={jsonDataInput}
-                  onChange={(e) => setJsonDataInput(e.target.value)}
-                  placeholder={getSampleDataJson()}
-                  rows={6}
-                  style={{
-                    width: "100%",
-                    marginBottom: "10px",
-                    fontFamily: "monospace",
-                    fontSize: "12px",
-                  }}
-                />
-                <p style={{ fontSize: "12px", marginTop: "5px" }}>
-                  Đường dẫn truy cập dữ liệu (JSON Path):
-                </p>
-                <input
-                  value={jsonDataPath}
-                  onChange={(e) => setJsonDataPath(e.target.value)}
-                  placeholder="data"
-                  style={{
-                    width: "100%",
-                    marginBottom: "10px",
-                    padding: "5px",
-                  }}
-                />
-                <button
-                  onClick={handleApplyJsonData}
-                  style={{
-                    backgroundColor: "#2196f3",
-                    color: "white",
-                    border: "none",
-                    padding: "5px 10px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                  }}
-                >
-                  Áp dụng
-                </button>
-              </div>
-            )}
-
-            {props.dataSource === "api" && (
-              <div>
-                <p style={{ fontSize: "12px", marginTop: "10px" }}>
-                  Cấu hình API:
-                </p>
-                <input
-                  value={apiUrl}
-                  onChange={(e) => setApiUrl(e.target.value)}
-                  placeholder="URL API"
-                  style={{
-                    width: "100%",
-                    marginBottom: "10px",
-                    padding: "5px",
-                  }}
-                />
-                <ToolbarItem
-                  propKey="apiDataPath"
-                  type="text"
-                  label="Đường dẫn dữ liệu"
-                />
-
-                <div style={{ display: "flex", marginBottom: "10px" }}>
-                  <button
-                    onClick={handleTestApi}
-                    style={{
-                      backgroundColor: "#ff9800",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      marginRight: "10px",
-                    }}
-                    disabled={apiTestStatus === "loading"}
-                  >
-                    {apiTestStatus === "loading"
-                      ? "Đang tải..."
-                      : "Kiểm tra API"}
-                  </button>
-
-                  <button
-                    onClick={handleApplyApiTestResult}
-                    style={{
-                      backgroundColor: "#4caf50",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }}
-                    disabled={apiTestStatus !== "success" || !apiTestResult}
-                  >
-                    Áp dụng
-                  </button>
-                </div>
-
-                {apiTestStatus === "error" && (
-                  <div
-                    style={{
-                      color: "red",
-                      fontSize: "12px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {apiTestError}
-                  </div>
-                )}
-
-                {apiTestStatus === "success" && (
-                  <div
-                    style={{
-                      color: "green",
-                      fontSize: "12px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    API trả về {apiTestResult?.length || 0} mục dữ liệu.
-                  </div>
-                )}
-
-                <ToolbarItem
-                  propKey="apiRefreshInterval"
-                  type="slider"
-                  label="Thời gian làm mới (giây)"
-                  onChange={(value: number) => {
-                    setProp((props) => {
-                      props.apiRefreshInterval = value;
-                    });
-                    return value;
-                  }}
-                />
               </div>
             )}
 
@@ -532,6 +407,29 @@ export const CollectionsSettings = () => {
                   type="text"
                   label="Đường dẫn dữ liệu"
                 />
+                <ToolbarItem
+                  type="select"
+                  label="Phương thức"
+                  propKey="apiMethod"
+                  onChange={(value) => {
+                    setApiMethod(value);
+                    setApiBody("");
+                  }}
+                >
+                  <FieldSelector noUse={false} fields={["GET", "POST"]} />
+                </ToolbarItem>
+                {apiMethod === "POST" && (
+                  <textarea
+                    value={apiBody}
+                    onChange={(e) => setApiBody(e.target.value)}
+                    placeholder="Body"
+                    style={{
+                      width: "100%",
+                      marginBottom: "10px",
+                      padding: "5px",
+                    }}
+                  />
+                )}
 
                 <div style={{ display: "flex", marginBottom: "10px" }}>
                   <button

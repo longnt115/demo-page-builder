@@ -1,14 +1,15 @@
-import React from 'react';
+import React from "react";
 
-import { ToolbarSection, ToolbarItem } from '../../editor';
-import { ToolbarRadio } from '../../editor/Toolbar/ToolbarRadio';
+import { FieldSelector } from "components/editor/Base/FieldSelector";
+import { ToolbarItem, ToolbarSection } from "../../editor";
+import { ToolbarRadio } from "../../editor/Toolbar/ToolbarRadio";
 
 export const ContainerSettings = () => {
   return (
     <React.Fragment>
       <ToolbarSection
         title="Dimensions"
-        props={['width', 'height']}
+        props={["width", "height"]}
         summary={({ width, height }: any) => {
           return `${width || 0} x ${height || 0}`;
         }}
@@ -18,7 +19,7 @@ export const ContainerSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Colors"
-        props={['background', 'color']}
+        props={["background", "color"]}
         summary={({ background, color }: any) => {
           return (
             <div className="flex flex-row-reverse">
@@ -52,7 +53,7 @@ export const ContainerSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Margin"
-        props={['margin']}
+        props={["margin"]}
         summary={({ margin }: any) => {
           return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${
             margin[3] || 0
@@ -66,7 +67,7 @@ export const ContainerSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Padding"
-        props={['padding']}
+        props={["padding"]}
         summary={({ padding }: any) => {
           return `${padding[0] || 0}px ${padding[1] || 0}px ${
             padding[2] || 0
@@ -78,13 +79,20 @@ export const ContainerSettings = () => {
         <ToolbarItem propKey="padding" index={2} type="slider" label="Bottom" />
         <ToolbarItem propKey="padding" index={3} type="slider" label="Left" />
       </ToolbarSection>
-      <ToolbarSection title="Decoration" props={['radius', 'shadow']}>
-        <ToolbarItem
-          full={true}
-          propKey="radius"
-          type="slider"
-          label="Radius"
-        />
+      <ToolbarSection
+        title="Border"
+        props={["borderWidth", "borderRadius", "borderType"]}
+        summary={({ borderWidth, borderType }: any) => {
+          return `${borderWidth}px ${borderType} #000`;
+        }}
+      >
+        <ToolbarItem propKey="borderWidth" type="text" label="Width" />
+        <ToolbarItem propKey="borderRadius" type="text" label="Radius" />
+        <ToolbarItem propKey="borderType" type="select" label="Type">
+          <FieldSelector fields={["solid", "dashed", "dotted"]} />
+        </ToolbarItem>
+      </ToolbarSection>
+      <ToolbarSection title="Decoration" props={["shadow"]}>
         <ToolbarItem
           full={true}
           propKey="shadow"

@@ -7,6 +7,7 @@ import { SidebarItem } from "./SidebarItem";
 
 import CustomizeIcon from "../../../../public/icons/customize.svg";
 import LayerIcon from "../../../../public/icons/layers.svg";
+import { DataSourcesPanel } from "../../DataSources/DataSourcesPanel";
 import { Toolbar } from "../../Toolbar";
 
 export const SidebarDiv = styled.div<{ $enabled: boolean }>`
@@ -19,6 +20,7 @@ export const SidebarDiv = styled.div<{ $enabled: boolean }>`
 export const Sidebar = () => {
   const [layersVisible, setLayerVisible] = useState(true);
   const [toolbarVisible, setToolbarVisible] = useState(true);
+  const [dataSourcesVisible, setDataSourcesVisible] = useState(false);
   const { enabled } = useEditor((state) => ({
     enabled: state.options.enabled,
   }));
@@ -26,6 +28,16 @@ export const Sidebar = () => {
   return (
     <SidebarDiv $enabled={enabled} className="sidebar transition bg-white w-2">
       <div className="flex flex-col h-full">
+        <SidebarItem
+          icon={CustomizeIcon}
+          title="Data source"
+          height={!dataSourcesVisible ? "full" : "55%"}
+          visible={dataSourcesVisible}
+          onChange={(val) => setDataSourcesVisible(val)}
+          className="overflow-auto"
+        >
+          <DataSourcesPanel />
+        </SidebarItem>
         <SidebarItem
           icon={CustomizeIcon}
           title="Customize"
@@ -36,6 +48,7 @@ export const Sidebar = () => {
         >
           <Toolbar />
         </SidebarItem>
+
         <SidebarItem
           icon={LayerIcon}
           title="Layers"

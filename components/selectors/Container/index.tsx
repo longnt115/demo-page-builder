@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
-import { ContainerSettings } from './ContainerSettings';
+import { ContainerSettings } from "./ContainerSettings";
 
-import { Resizer } from '../Resizer';
+import { Resizer } from "../Resizer";
 
 export type ContainerProps = {
-  background: Record<'r' | 'g' | 'b' | 'a', number>;
-  color: Record<'r' | 'g' | 'b' | 'a', number>;
+  background: Record<"r" | "g" | "b" | "a", number>;
+  color: Record<"r" | "g" | "b" | "a", number>;
   flexDirection: string;
   alignItems: string;
   justifyContent: string;
@@ -21,22 +21,26 @@ export type ContainerProps = {
   marginRight: number;
   shadow: number;
   children: React.ReactNode;
-  radius: number;
+  borderWidth: number;
+  borderRadius: number;
+  borderType: string;
 };
 
 const defaultProps = {
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  justifyContent: 'flex-start',
-  fillSpace: 'no',
-  padding: ['0', '0', '0', '0'],
-  margin: ['0', '0', '0', '0'],
+  flexDirection: "column",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+  fillSpace: "no",
+  padding: ["0", "0", "0", "0"],
+  margin: ["0", "0", "0", "0"],
   background: { r: 255, g: 255, b: 255, a: 1 },
   color: { r: 0, g: 0, b: 0, a: 1 },
   shadow: 0,
-  radius: 0,
-  width: '100%',
-  height: 'auto',
+  width: "100%",
+  height: "auto",
+  borderWidth: 0,
+  borderRadius: 0,
+  borderType: "solid",
 };
 
 export const Container = (props: Partial<ContainerProps>) => {
@@ -54,12 +58,14 @@ export const Container = (props: Partial<ContainerProps>) => {
     padding,
     margin,
     shadow,
-    radius,
     children,
+    borderWidth,
+    borderRadius,
+    borderType,
   } = props;
   return (
     <Resizer
-      propKey={{ width: 'width', height: 'height' }}
+      propKey={{ width: "width", height: "height" }}
       style={{
         justifyContent,
         flexDirection,
@@ -70,10 +76,11 @@ export const Container = (props: Partial<ContainerProps>) => {
         margin: `${margin[0]}px ${margin[1]}px ${margin[2]}px ${margin[3]}px`,
         boxShadow:
           shadow === 0
-            ? 'none'
+            ? "none"
             : `0px 3px 100px ${shadow}px rgba(0, 0, 0, 0.13)`,
-        borderRadius: `${radius}px`,
-        flex: fillSpace === 'yes' ? 1 : 'unset',
+        borderRadius: `${borderRadius}px`,
+        border: `${borderWidth}px ${borderType} #000`,
+        flex: fillSpace === "yes" ? 1 : "unset",
       }}
     >
       {children}
@@ -82,7 +89,7 @@ export const Container = (props: Partial<ContainerProps>) => {
 };
 
 Container.craft = {
-  displayName: 'Container',
+  displayName: "Container",
   props: defaultProps,
   rules: {
     canDrag: () => true,

@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { FormControlLabel, Radio, MenuItem, Select, TextField, Checkbox, FormControl, InputLabel } from "@mui/material";
 
 import { useEditor, useNode } from "@craftjs/core";
 import { FieldSelector } from "components/editor/Base/FieldSelector";
 import { ToolbarItem, ToolbarSection } from "../../editor";
-import { ToolbarRadio } from "../../editor/Toolbar/ToolbarRadio";
 import { useCollectionsContext } from "../Collections/CollectionsContext";
 
 export const ImageSettings = () => {
@@ -114,7 +112,13 @@ export const ImageSettings = () => {
           {/* Section mới cho Conditional Rendering */}
           <ToolbarSection
             title="Điều kiện hiển thị"
-            props={["enableCondition", "conditionField", "conditionOperator", "conditionValue", "conditionNegate"]}
+            props={[
+              "enableCondition",
+              "conditionField",
+              "conditionOperator",
+              "conditionValue",
+              "conditionNegate",
+            ]}
             summary={({ enableCondition }: any) => {
               return enableCondition ? "Đã kích hoạt" : "Không kích hoạt";
             }}
@@ -166,15 +170,17 @@ export const ImageSettings = () => {
 
                 <div
                   style={{
-                    fontSize: '12px',
-                    marginTop: '8px',
-                    padding: '8px',
-                    backgroundColor: '#f5f5f5',
-                    borderRadius: '4px',
-                    color: '#666',
+                    fontSize: "12px",
+                    marginTop: "8px",
+                    padding: "8px",
+                    backgroundColor: "#f5f5f5",
+                    borderRadius: "4px",
+                    color: "#666",
                   }}
                 >
-                  Thành phần này sẽ {props.conditionNegate ? 'ẩn' : 'hiển thị'} khi điều kiện {props.conditionNegate ? 'thỏa mãn' : 'không thỏa mãn'}.
+                  Thành phần này sẽ {props.conditionNegate ? "ẩn" : "hiển thị"}{" "}
+                  khi điều kiện
+                  {props.conditionNegate ? "thỏa mãn" : "không thỏa mãn"}.
                 </div>
               </>
             )}
@@ -183,15 +189,15 @@ export const ImageSettings = () => {
       )}
 
       <ToolbarSection title="Image Source">
-        {
-          !props.useDataBinding && <ToolbarItem
+        {!props.useDataBinding && (
+          <ToolbarItem
             full={true}
             propKey="src"
             type="text"
             label="URL ảnh"
             {...(props.useDataBinding && { disabled: true })}
           />
-        }
+        )}
         <ToolbarItem
           full={true}
           propKey="alt"
@@ -200,34 +206,14 @@ export const ImageSettings = () => {
         />
       </ToolbarSection>
 
-      <ToolbarSection title="Image Size">
-        <ToolbarItem
-          full={true}
-          propKey="width"
-          type="text"
-          label="Chiều rộng (px hoặc auto)"
-        />
-        <ToolbarItem
-          full={true}
-          propKey="height"
-          type="text"
-          label="Chiều cao (px hoặc auto)"
-        />
-        <ToolbarItem propKey="objectFit" type="radio" label="Kiểu hiển thị">
-          <ToolbarRadio value="cover" label="Cover" />
-          <ToolbarRadio value="contain" label="Contain" />
-          <ToolbarRadio value="fill" label="Fill" />
-          <ToolbarRadio value="none" label="None" />
-          <ToolbarRadio value="scale-down" label="Scale Down" />
-        </ToolbarItem>
-      </ToolbarSection>
-
       <ToolbarSection
         title="Border"
         props={["borderRadius", "borderWidth", "borderColor"]}
         summary={({ borderRadius, borderWidth, borderColor }: any) => {
           // Sử dụng borderColor trong summary để tránh lỗi "không sử dụng"
-          const borderColorStr = borderColor ? `rgba(${Object.values(borderColor)})` : 'transparent';
+          const borderColorStr = borderColor
+            ? `rgba(${Object.values(borderColor)})`
+            : "transparent";
           return `${borderRadius}px ${borderWidth}px ${borderColorStr}`;
         }}
       >
@@ -255,8 +241,9 @@ export const ImageSettings = () => {
         title="Margin"
         props={["margin"]}
         summary={({ margin }: any) => {
-          return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${margin[3] || 0
-            }px`;
+          return `${margin[0] || 0}px ${margin[1] || 0}px ${margin[2] || 0}px ${
+            margin[3] || 0
+          }px`;
         }}
       >
         <ToolbarItem propKey="margin" index={0} type="slider" label="Trên" />
@@ -281,14 +268,32 @@ export const ImageSettings = () => {
       </ToolbarSection>
       <ToolbarSection
         title="Styles"
-        props={["zIndex", "opacity", "position"]}
+        props={["width", "height", "zIndex", "opacity", "position"]}
       >
         <ToolbarItem
           full={true}
-          propKey="zIndex"
+          propKey="width"
           type="text"
-          label="Z-index"
+          label="Chiều rộng (px hoặc auto)"
         />
+        <ToolbarItem
+          full={true}
+          propKey="height"
+          type="text"
+          label="Chiều cao (px hoặc auto)"
+        />
+        <ToolbarItem
+          full={true}
+          propKey="objectFit"
+          type="select"
+          label="Kiểu hiển thị"
+        >
+          <FieldSelector
+            fields={["cover", "contain", "fill", "none", "scale-down"]}
+            noUse={false}
+          />
+        </ToolbarItem>
+        <ToolbarItem full={true} propKey="zIndex" type="text" label="Z-index" />
         <ToolbarItem
           full={true}
           propKey="opacity"
@@ -301,7 +306,10 @@ export const ImageSettings = () => {
           type="select"
           label="Position"
         >
-          <FieldSelector fields={[ "relative", "static", "fixed", "absolute", "sticky"]} noUse={false} />
+          <FieldSelector
+            fields={["relative", "static", "fixed", "absolute", "sticky"]}
+            noUse={false}
+          />
         </ToolbarItem>
       </ToolbarSection>
     </React.Fragment>
