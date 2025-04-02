@@ -1,77 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { useDataSources, DataSource, HttpMethod } from './DataSourcesContext';
+import React, { useState } from "react";
+import { HttpMethod, useDataSources } from "./DataSourcesContext";
 
 export const DataSourcesManager: React.FC = () => {
-  const { dataSources, addDataSource, updateDataSource, removeDataSource, refreshDataSource } = useDataSources();
-  
+  const {
+    dataSources,
+    addDataSource,
+    updateDataSource,
+    removeDataSource,
+    refreshDataSource,
+  } = useDataSources();
+
   // State cho data source đang được chỉnh sửa
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [type, setType] = useState<'static' | 'json' | 'api'>('static');
-  
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [type, setType] = useState<"static" | "json" | "api">("static");
+
   // State cho dữ liệu tĩnh
-  const [staticData, setStaticData] = useState('[]');
-  
+  const [staticData, setStaticData] = useState("[]");
+
   // State cho dữ liệu JSON
-  const [jsonData, setJsonData] = useState('');
-  const [jsonDataPath, setJsonDataPath] = useState('data');
-  
+  const [jsonData, setJsonData] = useState("");
+  const [jsonDataPath, setJsonDataPath] = useState("data");
+
   // State cho dữ liệu API
-  const [apiUrl, setApiUrl] = useState('');
-  const [apiDataPath, setApiDataPath] = useState('data');
+  const [apiUrl, setApiUrl] = useState("");
+  const [apiDataPath, setApiDataPath] = useState("data");
   const [apiRefreshInterval, setApiRefreshInterval] = useState(0);
-  const [apiMethod, setApiMethod] = useState<HttpMethod>('GET');
-  const [apiHeaders, setApiHeaders] = useState('{}');
-  const [apiBody, setApiBody] = useState('');
-  
+  const [apiMethod, setApiMethod] = useState<HttpMethod>("GET");
+  const [apiHeaders, setApiHeaders] = useState("{}");
+  const [apiBody, setApiBody] = useState("");
+
   // Reset form để thêm mới
   const resetForm = () => {
     setEditingId(null);
-    setName('');
-    setDescription('');
-    setType('static');
-    setStaticData('[]');
-    setJsonData('');
-    setJsonDataPath('data');
-    setApiUrl('');
-    setApiDataPath('data');
+    setName("");
+    setDescription("");
+    setType("static");
+    setStaticData("[]");
+    setJsonData("");
+    setJsonDataPath("data");
+    setApiUrl("");
+    setApiDataPath("data");
     setApiRefreshInterval(0);
-    setApiMethod('GET');
-    setApiHeaders('{}');
-    setApiBody('');
+    setApiMethod("GET");
+    setApiHeaders("{}");
+    setApiBody("");
   };
-  
+
   // Load dữ liệu vào form để chỉnh sửa
   const editDataSource = (id: string) => {
     const dataSource = dataSources[id];
     if (!dataSource) return;
-    
+
     setEditingId(id);
     setName(dataSource.name);
-    setDescription(dataSource.description || '');
+    setDescription(dataSource.description || "");
     setType(dataSource.type);
-    
+
     // Kiểm tra và load dữ liệu theo từng loại
-    if (dataSource.type === 'static') {
+    if (dataSource.type === "static") {
       setStaticData(JSON.stringify(dataSource.data || [], null, 2));
-    } else if (dataSource.type === 'json') {
-      setJsonData(dataSource.jsonData || '');
-      setJsonDataPath(dataSource.jsonDataPath || 'data');
-    } else if (dataSource.type === 'api') {
-      setApiUrl(dataSource.apiUrl || '');
-      setApiDataPath(dataSource.apiDataPath || 'data');
+    } else if (dataSource.type === "json") {
+      setJsonData(dataSource.jsonData || "");
+      setJsonDataPath(dataSource.jsonDataPath || "data");
+    } else if (dataSource.type === "api") {
+      setApiUrl(dataSource.apiUrl || "");
+      setApiDataPath(dataSource.apiDataPath || "data");
       setApiRefreshInterval(dataSource.apiRefreshInterval || 0);
-      setApiMethod(dataSource.apiMethod || 'GET');
+      setApiMethod(dataSource.apiMethod || "GET");
       setApiHeaders(JSON.stringify(dataSource.apiHeaders || {}, null, 2));
-      setApiBody(dataSource.apiBody || '');
+      setApiBody(dataSource.apiBody || "");
     }
   };
-  
+
   // Xử lý lưu data source
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingId) {
         // Cập nhật data source đã có
@@ -79,18 +85,18 @@ export const DataSourcesManager: React.FC = () => {
           name,
           description,
           type,
-          ...(type === 'static' && { data: JSON.parse(staticData) }),
-          ...(type === 'json' && { jsonData, jsonDataPath }),
-          ...(type === 'api' && { 
-            apiUrl, 
-            apiDataPath, 
+          ...(type === "static" && { data: JSON.parse(staticData) }),
+          ...(type === "json" && { jsonData, jsonDataPath }),
+          ...(type === "api" && {
+            apiUrl,
+            apiDataPath,
             apiRefreshInterval,
             apiMethod,
             apiHeaders: JSON.parse(apiHeaders),
-            apiBody
+            apiBody,
           }),
         });
-        
+
         // Refresh data source sau khi cập nhật
         refreshDataSource(editingId);
       } else {
@@ -102,30 +108,30 @@ export const DataSourcesManager: React.FC = () => {
           data: [],
           fields: [],
           lastUpdated: Date.now(),
-          ...(type === 'static' && { data: JSON.parse(staticData) }),
-          ...(type === 'json' && { jsonData, jsonDataPath }),
-          ...(type === 'api' && { 
-            apiUrl, 
-            apiDataPath, 
+          ...(type === "static" && { data: JSON.parse(staticData) }),
+          ...(type === "json" && { jsonData, jsonDataPath }),
+          ...(type === "api" && {
+            apiUrl,
+            apiDataPath,
             apiRefreshInterval,
             apiMethod,
             apiHeaders: JSON.parse(apiHeaders),
-            apiBody
+            apiBody,
           }),
         });
       }
-      
+
       resetForm();
     } catch (error) {
-      console.error('Error saving data source:', error);
+      console.error("Error saving data source:", error);
       alert(`Lỗi khi lưu nguồn dữ liệu: ${error}`);
     }
   };
-  
+
   // Render form theo loại data source
   const renderFormByType = () => {
     switch (type) {
-      case 'static':
+      case "static":
         return (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -140,8 +146,8 @@ export const DataSourcesManager: React.FC = () => {
             />
           </div>
         );
-      
-      case 'json':
+
+      case "json":
         return (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700">
@@ -154,7 +160,7 @@ export const DataSourcesManager: React.FC = () => {
               rows={8}
               placeholder='{"data": [{"id": 1, "name": "Item 1"}, {"id": 2, "name": "Item 2"}]}'
             />
-            
+
             <label className="block text-sm font-medium text-gray-700 mt-2">
               JSON Path (truy cập vào mảng dữ liệu)
             </label>
@@ -167,11 +173,13 @@ export const DataSourcesManager: React.FC = () => {
             />
           </div>
         );
-      
-      case 'api':
+
+      case "api":
         return (
           <div className="mt-4">
-            <label className="block text-sm font-medium text-gray-700">API URL</label>
+            <label className="block text-sm font-medium text-gray-700">
+              API URL
+            </label>
             <input
               type="text"
               value={apiUrl}
@@ -179,9 +187,11 @@ export const DataSourcesManager: React.FC = () => {
               placeholder="https://api.example.com/data"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
-            
+
             <div className="mt-2">
-              <label className="block text-sm font-medium text-gray-700">HTTP Method</label>
+              <label className="block text-sm font-medium text-gray-700">
+                HTTP Method
+              </label>
               <select
                 value={apiMethod}
                 onChange={(e) => setApiMethod(e.target.value as HttpMethod)}
@@ -193,7 +203,7 @@ export const DataSourcesManager: React.FC = () => {
                 <option value="DELETE">DELETE</option>
               </select>
             </div>
-            
+
             <label className="block text-sm font-medium text-gray-700 mt-2">
               API Data Path (truy cập vào mảng dữ liệu)
             </label>
@@ -204,7 +214,7 @@ export const DataSourcesManager: React.FC = () => {
               placeholder="data"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
-            
+
             <label className="block text-sm font-medium text-gray-700 mt-2">
               API Headers (JSON)
             </label>
@@ -215,8 +225,8 @@ export const DataSourcesManager: React.FC = () => {
               rows={3}
               placeholder='{"Content-Type": "application/json", "Authorization": "Bearer token"}'
             />
-            
-            {(apiMethod === 'POST' || apiMethod === 'PUT') && (
+
+            {(apiMethod === "POST" || apiMethod === "PUT") && (
               <>
                 <label className="block text-sm font-medium text-gray-700 mt-2">
                   API Body
@@ -230,84 +240,79 @@ export const DataSourcesManager: React.FC = () => {
                 />
               </>
             )}
-            
+
             <label className="block text-sm font-medium text-gray-700 mt-2">
               Thời gian tự động làm mới (ms, 0 = không làm mới)
             </label>
             <input
               type="number"
               value={apiRefreshInterval}
-              onChange={(e) => setApiRefreshInterval(parseInt(e.target.value) || 0)}
+              onChange={(e) =>
+                setApiRefreshInterval(parseInt(e.target.value) || 0)
+              }
               placeholder="0"
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             />
           </div>
         );
-      
+
       default:
         return null;
     }
   };
-  
+
   // Render danh sách data sources
   const renderDataSources = () => {
     return Object.entries(dataSources).map(([id, dataSource]) => (
       <div key={id} className="border p-4 rounded-md mb-4 bg-white shadow-sm">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="font-bold">{dataSource.name}</h3>
-            <p className="text-sm text-gray-500">
-              {dataSource.description || 'Không có mô tả'}
-            </p>
-            <div className="mt-1 text-xs">
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">
-                {dataSource.type}
-              </span>
-              <span className="text-gray-500">
-                {dataSource.data.length} mục
-              </span>
-              {dataSource.fields.length > 0 && (
-                <div className="mt-1">
-                  <span className="text-gray-500">Các trường: </span>
-                  {dataSource.fields.map((field) => (
-                    <span
-                      key={field}
-                      className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1"
-                    >
-                      {field}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+        <div className="flex">
+          <h3 className="font-bold flex-1">{dataSource.name}</h3>
+          <div className="mt-1 text-xs">
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">
+              {dataSource.type}
+            </span>
+            <span className="text-gray-500">{dataSource.data.length} mục</span>
           </div>
-          <div className="flex space-x-2">
-            <button
-              onClick={() => refreshDataSource(id)}
-              className="px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100"
-              title="Làm mới dữ liệu"
-            >
-              🔄
-            </button>
-            <button
-              onClick={() => editDataSource(id)}
-              className="px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
-              title="Chỉnh sửa"
-            >
-              ✏️
-            </button>
-            <button
-              onClick={() => {
-                if (window.confirm('Bạn có chắc muốn xóa nguồn dữ liệu này?')) {
-                  removeDataSource(id);
-                }
-              }}
-              className="px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100"
-              title="Xóa"
-            >
-              🗑️
-            </button>
+        </div>
+        {dataSource.fields.length > 0 && (
+          <div className="mt-1 break-words">
+            <p className="text-gray-500">Các trường: </p>
+            {dataSource.fields.map((field) => (
+              <span
+                key={field}
+                className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded mr-1"
+              >
+                {field}
+              </span>
+            ))}
           </div>
+        )}
+        <div className="flex mt-1 space-x-2">
+          <button
+            onClick={() => refreshDataSource(id)}
+            className="px-2 py-1 bg-green-50 text-green-700 rounded hover:bg-green-100"
+            title="Làm mới dữ liệu"
+          >
+            🔄
+          </button>
+          <button
+            onClick={() => editDataSource(id)}
+            className="px-2 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100"
+            title="Chỉnh sửa"
+          >
+            ✏️
+          </button>
+          <button
+            onClick={() => {
+              if (window.confirm("Bạn có chắc muốn xóa nguồn dữ liệu này?")) {
+                removeDataSource(id);
+              }
+            }}
+            className="px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100"
+            title="Xóa"
+          >
+            🗑️
+          </button>
         </div>
         {dataSource.error && (
           <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded">
@@ -322,16 +327,16 @@ export const DataSourcesManager: React.FC = () => {
       </div>
     ));
   };
-  
+
   return (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-4">Quản lý Nguồn dữ liệu</h2>
-      
+
       <form onSubmit={handleSubmit} className="mb-6 bg-gray-50 p-4 rounded-md">
         <h3 className="font-medium mb-3">
-          {editingId ? 'Chỉnh sửa nguồn dữ liệu' : 'Thêm nguồn dữ liệu mới'}
+          {editingId ? "Chỉnh sửa nguồn dữ liệu" : "Thêm nguồn dữ liệu mới"}
         </h3>
-        
+
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700">
             Tên nguồn dữ liệu
@@ -344,7 +349,7 @@ export const DataSourcesManager: React.FC = () => {
             required
           />
         </div>
-        
+
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700">
             Mô tả (tùy chọn)
@@ -356,14 +361,16 @@ export const DataSourcesManager: React.FC = () => {
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           />
         </div>
-        
+
         <div className="mb-3">
           <label className="block text-sm font-medium text-gray-700">
             Loại nguồn dữ liệu
           </label>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as 'static' | 'json' | 'api')}
+            onChange={(e) =>
+              setType(e.target.value as "static" | "json" | "api")
+            }
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           >
             <option value="static">Dữ liệu tĩnh (Static)</option>
@@ -371,15 +378,15 @@ export const DataSourcesManager: React.FC = () => {
             <option value="api">API</option>
           </select>
         </div>
-        
+
         {renderFormByType()}
-        
+
         <div className="mt-4 flex space-x-3">
           <button
             type="submit"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            {editingId ? 'Cập nhật' : 'Thêm mới'}
+            {editingId ? "Cập nhật" : "Thêm mới"}
           </button>
           {editingId && (
             <button
@@ -392,7 +399,7 @@ export const DataSourcesManager: React.FC = () => {
           )}
         </div>
       </form>
-      
+
       <div className="mt-6">
         <h3 className="font-medium mb-3">Danh sách nguồn dữ liệu</h3>
         {Object.keys(dataSources).length === 0 ? (
